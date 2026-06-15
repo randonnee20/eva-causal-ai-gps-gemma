@@ -125,7 +125,16 @@ def _gen_gemini(prompt, system, temperature, max_tokens):
     for model_name in GEMINI_MODELS:
         try:
             resp = client.models.generate_content(model=model_name, contents=prompt, config=cfg)
-            return (resp.text or "").strip()
+            text = (resp.text or "").strip()
+            # 토큰 한도로 잘렸으면 재시도 없이 경고 추가
+            finish = None
+            try:
+                finish = resp.candidates[0].finish_reason.name if resp.candidates else None
+            except Exception:
+                pass
+            if finish == "MAX_TOKENS":
+                text = text + "…"
+            return text
         except Exception as e:
             last_err = e
     raise RuntimeError(f"Gemini 호출 실패: {last_err}")
@@ -134,7 +143,7 @@ def _gen_gemini(prompt, system, temperature, max_tokens):
 # ---------------------------------------------------------------------------
 # 공개 인터페이스
 # ---------------------------------------------------------------------------
-def generate(prompt, system="", temperature=0.4, max_tokens=600):
+def generate(prompt, system="", temperature=0.4, max_tokens=1000):
     mode = detect_mode()
     if mode == "ollama":
         return _gen_ollama(prompt, system, temperature, max_tokens)

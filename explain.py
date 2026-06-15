@@ -98,7 +98,7 @@ def show(cache_key, prompt, temperature=0.3):
     if sk not in st.session_state:
         try:
             with st.spinner("AI가 결과를 쉬운 말로 해석하는 중..."):
-                st.session_state[sk] = llm.generate(prompt, system=SYSTEM, temperature=temperature, max_tokens=600)
+                st.session_state[sk] = llm.generate(prompt, system=SYSTEM, temperature=temperature, max_tokens=1000)
         except Exception as e:
             st.session_state[sk] = f"(AI 해석을 생성하지 못했습니다: {e})"
     _box(st.session_state[sk], llm.status_label())
