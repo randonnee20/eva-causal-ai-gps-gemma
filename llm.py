@@ -28,7 +28,7 @@ _mode = None  # "ollama" | "gemini" | "none"
 
 
 def _daily_limit():
-    return int(os.environ.get("DAILY_LIMIT", "200"))
+    return int(os.environ.get("DAILY_LIMIT", "35"))
 
 
 # ---------------------------------------------------------------------------
