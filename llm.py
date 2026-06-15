@@ -112,18 +112,10 @@ def _check_and_increment():
     USAGE_FILE.write_text(json.dumps(usage, ensure_ascii=False), encoding="utf-8")
 
 
-_last_gemini_call = 0.0  # RPM 보호용
-
 def _gen_gemini(prompt, system, temperature, max_tokens):
-    global _last_gemini_call
     from google import genai
     from google.genai import types
-    # 무료 tier RPM(15/분) 보호 — 호출 간격 5초 확보
-    elapsed = time.time() - _last_gemini_call
-    if elapsed < 5.0:
-        time.sleep(5.0 - elapsed)
     _check_and_increment()
-    _last_gemini_call = time.time()
     client = genai.Client(api_key=_get_gemini_key())
     cfg = types.GenerateContentConfig(
         temperature=temperature,
