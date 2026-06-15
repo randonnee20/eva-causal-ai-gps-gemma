@@ -132,20 +132,26 @@ def _gen_gemini(prompt, system, temperature, max_tokens):
     )
     last_err = None
     for model_name in GEMINI_MODELS:
-        try:
-            resp = client.models.generate_content(model=model_name, contents=prompt, config=cfg)
-            text = (resp.text or "").strip()
-            # 토큰 한도로 잘렸으면 재시도 없이 경고 추가
-            finish = None
+        for attempt in range(3):  # 모델당 최대 3회 재시도
             try:
-                finish = resp.candidates[0].finish_reason.name if resp.candidates else None
-            except Exception:
-                pass
-            if finish == "MAX_TOKENS":
-                text = text + "…"
-            return text
-        except Exception as e:
-            last_err = e
+                resp = client.models.generate_content(model=model_name, contents=prompt, config=cfg)
+                text = (resp.text or "").strip()
+                finish = None
+                try:
+                    finish = resp.candidates[0].finish_reason.name if resp.candidates else None
+                except Exception:
+                    pass
+                if finish == "MAX_TOKENS":
+                    text = text + "…"
+                return text
+            except Exception as e:
+                last_err = e
+                err_str = str(e)
+                if "503" in err_str or "UNAVAILABLE" in err_str or "429" in err_str:
+                    wait = 5 * (attempt + 1)  # 5s → 10s → 15s
+                    time.sleep(wait)
+                else:
+                    break  # 503/429 외 에러는 재시도 무의미
     raise RuntimeError(f"Gemini 호출 실패: {last_err}")
 
 
