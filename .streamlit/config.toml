@@ -1,0 +1,5 @@
+[server]
+enableCORS = false
+
+[theme]
+base = "light"
