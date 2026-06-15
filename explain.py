@@ -89,6 +89,8 @@ def _box(text, label):
     )
 
 
+_PREFIX = "【규칙】반드시 3문장 이내로만 답하라. 4문장부터는 절대 쓰지 마라.\n\n"
+
 def show(cache_key, prompt, temperature=0.3):
     """결과 아래에 AI 해석을 자동 표시. 동일 내용은 캐시해 재호출하지 않는다."""
     if not st.session_state.get("ai_explain_on", True):
@@ -98,7 +100,15 @@ def show(cache_key, prompt, temperature=0.3):
     if sk not in st.session_state:
         try:
             with st.spinner("AI가 결과를 쉬운 말로 해석하는 중..."):
-                st.session_state[sk] = llm.generate(prompt, system=SYSTEM, temperature=temperature, max_tokens=1500)
+                full_prompt = _PREFIX + prompt
+                result = llm.generate(full_prompt, system=SYSTEM, temperature=temperature, max_tokens=1500)
+                # MAX_TOKENS 감지 시 1회 재시도 (더 짧게 요청)
+                if result.endswith("…"):
+                    result = llm.generate(
+                        "【규칙】반드시 2문장으로만 답하라.\n\n" + prompt,
+                        system=SYSTEM, temperature=temperature, max_tokens=800
+                    )
+                st.session_state[sk] = result
         except Exception as e:
             st.session_state[sk] = f"(AI 해석을 생성하지 못했습니다: {e})"
     _box(st.session_state[sk], llm.status_label())
