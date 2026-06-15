@@ -134,7 +134,7 @@ def _gen_gemini(prompt, system, temperature, max_tokens):
 # ---------------------------------------------------------------------------
 # 공개 인터페이스
 # ---------------------------------------------------------------------------
-def generate(prompt, system="", temperature=0.4, max_tokens=300):
+def generate(prompt, system="", temperature=0.4, max_tokens=600):
     mode = detect_mode()
     if mode == "ollama":
         return _gen_ollama(prompt, system, temperature, max_tokens)
