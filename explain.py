@@ -102,7 +102,6 @@ def show(cache_key, prompt, temperature=0.3):
             with st.spinner("AI가 결과를 쉬운 말로 해석하는 중..."):
                 full_prompt = _PREFIX + prompt
                 result = llm.generate(full_prompt, system=SYSTEM, temperature=temperature, max_tokens=1500)
-                # MAX_TOKENS 감지 시 1회 재시도 (더 짧게 요청)
                 if result.endswith("…"):
                     result = llm.generate(
                         "【규칙】반드시 2문장으로만 답하라.\n\n" + prompt,
@@ -110,5 +109,13 @@ def show(cache_key, prompt, temperature=0.3):
                     )
                 st.session_state[sk] = result
         except Exception as e:
-            st.session_state[sk] = f"(AI 해석을 생성하지 못했습니다: {e})"
+            # 에러는 캐시하지 않음 → 버튼으로 재시도 가능
+            err_msg = str(e)
+            if "503" in err_msg or "UNAVAILABLE" in err_msg:
+                st.warning("Gemini 서버가 일시적으로 혼잡합니다. 잠시 후 아래 버튼을 눌러주세요.")
+            else:
+                st.warning(f"AI 해석 생성 실패: {err_msg}")
+            if st.button("🔄 AI 해석 다시 시도", key=f"retry_{sk}"):
+                st.rerun()
+            return
     _box(st.session_state[sk], llm.status_label())
