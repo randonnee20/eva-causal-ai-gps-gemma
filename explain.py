@@ -65,7 +65,7 @@ SYSTEM = """당신은 인과추론(Causal Inference) 분석 결과를 통계를 
 - 반사실 : "만약 그때 다르게 했다면 어땠을까"를 추정하는 것
 
 [작성 규칙]
-- 한국어, 2~3문장, 중학생도 이해할 수준으로 쉽게.
+- 한국어, 반드시 2~3문장으로 끝내라. 절대 4문장 이상 쓰지 마라. 중학생도 이해할 수준으로 쉽게.
 - 주어진 숫자와 방향만 사용하라. 주어지지 않은 숫자를 지어내거나 '몇 명 중 몇 명' 식으로 바꾸지 마라.
 - 주어진 사실의 방향(오른다/내린다, 늘어난다/줄어든다)을 절대 반대로 바꾸지 마라.
 - 그 단계에서 '주어진 변수'만 언급하라. 주어지지 않은 다른 변수(예: 시스템 품질, 인터페이스 품질 등)를 끌어와 원인으로 추측하지 마라.
@@ -98,7 +98,7 @@ def show(cache_key, prompt, temperature=0.3):
     if sk not in st.session_state:
         try:
             with st.spinner("AI가 결과를 쉬운 말로 해석하는 중..."):
-                st.session_state[sk] = llm.generate(prompt, system=SYSTEM, temperature=temperature, max_tokens=1000)
+                st.session_state[sk] = llm.generate(prompt, system=SYSTEM, temperature=temperature, max_tokens=1500)
         except Exception as e:
             st.session_state[sk] = f"(AI 해석을 생성하지 못했습니다: {e})"
     _box(st.session_state[sk], llm.status_label())
